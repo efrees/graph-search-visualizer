@@ -1,0 +1,27 @@
+.Grid {
+    padding: 5px;
+    align-content: center;
+}
+
+.GridRow {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    margin: auto;
+    padding: 0;
+    height: 27px;
+    overflow: hidden;
+}
+
+.GridCell {
+    display: inline-block;
+    height: 25px;
+    width: 25px;
+    border: 1px solid #61dafb;
+    flex-shrink: 0;
+}
+
+.GridCell.Visited {
+    background-color: #61dafba2;
+}
