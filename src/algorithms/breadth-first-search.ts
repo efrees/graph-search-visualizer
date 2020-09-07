@@ -49,8 +49,8 @@ export class BreadthFirstSearch extends SearchAlgorithm {
         const curNode = current.node;
         return [
             { node: [curNode[0] - 1, curNode[1]], previous: current },
-            { node: [curNode[0] + 1, curNode[1]], previous: current },
             { node: [curNode[0], curNode[1] - 1], previous: current },
+            { node: [curNode[0] + 1, curNode[1]], previous: current },
             { node: [curNode[0], curNode[1] + 1], previous: current }
         ]
     }

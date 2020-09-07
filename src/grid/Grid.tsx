@@ -14,8 +14,9 @@ export enum CellType {
 export interface GridParams {
     width: number;
     height: number;
-    target: [number, number];
-    searchState: SearchSnapshot<GridNode> | CompletedSearch<GridNode>;
+    target: GridNode;
+    searchState: SearchSnapshot<GridNode>;
+    cellClicked: (cell: GridNode) => void;
 }
 
 export interface GridState {
@@ -37,13 +38,11 @@ function GridCell(props: GridCellParams): JSX.Element {
 export class Grid extends React.Component<GridParams, GridState> {
     constructor(props: GridParams) {
         super(props);
-        this.state = {
-            cells: this.generateGridArrays(props.searchState)
-        }
     }
 
     render(): JSX.Element {
-        const gridElements = this.mapToCellElements(this.state.cells);
+        const cells = this.generateGridArrays(this.props.searchState);
+        const gridElements = this.mapToCellElements(cells);
         return (
             <div className="Grid">
                 {gridElements}
@@ -51,7 +50,7 @@ export class Grid extends React.Component<GridParams, GridState> {
         );
     }
 
-    private generateGridArrays(searchState: SearchSnapshot<GridNode> | CompletedSearch<GridNode>) {
+    private generateGridArrays(searchState: SearchSnapshot<GridNode>) {
         const tempGrid: CellType[][] = Array(this.props.height);
         for (let i = 0; i < tempGrid.length; i++) {
             tempGrid[i] = Array(this.props.width);
@@ -63,27 +62,29 @@ export class Grid extends React.Component<GridParams, GridState> {
         return tempGrid;
     }
 
-    private getTypeForNode(currentNode: GridNode, searchState: SearchSnapshot<GridNode> | CompletedSearch<GridNode>) {
-        let cellType = CellType.Default;
+    private getTypeForNode(currentNode: GridNode, searchState: SearchSnapshot<GridNode>): CellType {
         if (areGridNodesEqual(this.props.target, currentNode)) {
-            cellType = CellType.Finish;
+            return CellType.Finish;
         }
-        else if (areGridNodesEqual(searchState.start, currentNode)) {
-            cellType = CellType.Start;
+        if (!searchState) {
+            return CellType.Default;
         }
-        else if (this.isCompletedSearch(searchState) && searchState.resultingPath.some(node => areGridNodesEqual(node, currentNode))) {
-            cellType = CellType.Path;
+        if (areGridNodesEqual(searchState.start, currentNode)) {
+            return CellType.Start;
         }
-        else if (searchState.visitedNodes.some(node => areGridNodesEqual(node, currentNode))) {
-            cellType = CellType.Visited;
+        if (this.isCompletedSearch(searchState) && searchState.resultingPath.some(node => areGridNodesEqual(node, currentNode))) {
+            return CellType.Path;
         }
-        else if (searchState.frontierNodes.some(node => areGridNodesEqual(node, currentNode))) {
-            cellType = CellType.Frontier;
+        if (searchState.visitedNodes.some(node => areGridNodesEqual(node, currentNode))) {
+            return CellType.Visited;
         }
-        return cellType;
+        if (searchState.frontierNodes.some(node => areGridNodesEqual(node, currentNode))) {
+            return CellType.Frontier;
+        }
+        return CellType.Default;
     }
 
-    private isCompletedSearch(searchState: SearchSnapshot<GridNode> | CompletedSearch<GridNode>): searchState is CompletedSearch<GridNode> {
+    private isCompletedSearch(searchState: SearchSnapshot<GridNode>): searchState is CompletedSearch<GridNode> {
         return (searchState as CompletedSearch<GridNode>).isComplete;
     }
 
@@ -91,16 +92,9 @@ export class Grid extends React.Component<GridParams, GridState> {
         return grid.map((row, i) => {
             return (
                 <div className="GridRow" key={`row-${i}`}>
-                    {row.map((type, j) => (<GridCell key={`${i}-${j}`} type={type} onClick={() => this.cellClicked(i, j)} />))}
+                    {row.map((type, j) => (<GridCell key={`${i}-${j}`} type={type} onClick={() => this.props.cellClicked([j, i])} />))}
                 </div>
             );
         })
-    }
-
-    private cellClicked(rowIndex: number, colIndex: number): void {
-        // const cells = this.state.cells.slice();
-        // cells[rowIndex] = cells[rowIndex].slice();
-        // cells[rowIndex][colIndex] = CellType.Visited;
-        // this.setState({ cells });
     }
 }
