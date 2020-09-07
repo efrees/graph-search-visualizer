@@ -1,16 +1,21 @@
 import React from 'react';
 import './Grid.css';
+import { CompletedSearch, SearchSnapshot, GridNode, areGridNodesEqual } from '../algorithms';
 
 export enum CellType {
     Default = 'Default',
     Visited = 'Visited',
+    Frontier = "Frontier",
+    Path = "Path",
     Start = 'Start',
-    Finish = 'Finish'
+    Finish = 'Finish',
 }
 
 export interface GridParams {
     width: number;
     height: number;
+    target: [number, number];
+    searchState: SearchSnapshot<GridNode> | CompletedSearch<GridNode>;
 }
 
 export interface GridState {
@@ -33,7 +38,7 @@ export class Grid extends React.Component<GridParams, GridState> {
     constructor(props: GridParams) {
         super(props);
         this.state = {
-            cells: this.generateGridArrays()
+            cells: this.generateGridArrays(props.searchState)
         }
     }
 
@@ -46,10 +51,26 @@ export class Grid extends React.Component<GridParams, GridState> {
         );
     }
 
-    private generateGridArrays() {
+    private generateGridArrays(searchState: SearchSnapshot<GridNode>) {
         const tempGrid: CellType[][] = Array(this.props.height);
         for (let i = 0; i < tempGrid.length; i++) {
-            tempGrid[i] = Array(this.props.width).fill(CellType.Default);
+            tempGrid[i] = Array(this.props.width);
+            for (let j = 0; j < this.props.width; j++) {
+                let cellType = CellType.Default;
+
+                const currentNode: GridNode = [j, i];
+                if (areGridNodesEqual(this.props.target, currentNode)) {
+                    cellType = CellType.Finish;
+                } else if (areGridNodesEqual(searchState.start, currentNode)) {
+                    cellType = CellType.Start;
+                } else if (searchState.visitedNodes.some(node => areGridNodesEqual(node, currentNode))) {
+                    cellType = CellType.Visited;
+                } else if (searchState.frontierNodes.some(node => areGridNodesEqual(node, currentNode))) {
+                    cellType = CellType.Frontier;
+                }
+
+                tempGrid[i][j] = cellType;
+            }
         }
         return tempGrid;
     }
@@ -65,9 +86,9 @@ export class Grid extends React.Component<GridParams, GridState> {
     }
 
     private cellClicked(rowIndex: number, colIndex: number): void {
-        const cells = this.state.cells.slice();
-        cells[rowIndex] = cells[rowIndex].slice();
-        cells[rowIndex][colIndex] = CellType.Visited;
-        this.setState({ cells });
+        // const cells = this.state.cells.slice();
+        // cells[rowIndex] = cells[rowIndex].slice();
+        // cells[rowIndex][colIndex] = CellType.Visited;
+        // this.setState({ cells });
     }
 }

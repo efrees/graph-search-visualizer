@@ -25,3 +25,19 @@
 .GridCell.Visited {
     background-color: #61dafba2;
 }
+
+.GridCell.Frontier {
+    background-color: #1a6f86da;
+}
+
+.GridCell.Path {
+    background-color: #d8cb19;
+}
+
+.GridCell.Finish {
+    background-color: #d81998;
+}
+
+.GridCell.Start {
+    background-color: #5fd819;
+}
