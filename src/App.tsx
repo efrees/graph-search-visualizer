@@ -1,8 +1,7 @@
 import React from 'react';
 import './App.css';
 import { Grid } from './grid/Grid';
-import { GridNode } from './algorithms';
-import { BreadthFirstSearch } from './algorithms/breadth-first-search';
+import { GridNode, BreadthFirstSearch } from './algorithms';
 
 function App() {
     const searchHistory = [];

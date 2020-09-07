@@ -51,28 +51,40 @@ export class Grid extends React.Component<GridParams, GridState> {
         );
     }
 
-    private generateGridArrays(searchState: SearchSnapshot<GridNode>) {
+    private generateGridArrays(searchState: SearchSnapshot<GridNode> | CompletedSearch<GridNode>) {
         const tempGrid: CellType[][] = Array(this.props.height);
         for (let i = 0; i < tempGrid.length; i++) {
             tempGrid[i] = Array(this.props.width);
             for (let j = 0; j < this.props.width; j++) {
-                let cellType = CellType.Default;
-
                 const currentNode: GridNode = [j, i];
-                if (areGridNodesEqual(this.props.target, currentNode)) {
-                    cellType = CellType.Finish;
-                } else if (areGridNodesEqual(searchState.start, currentNode)) {
-                    cellType = CellType.Start;
-                } else if (searchState.visitedNodes.some(node => areGridNodesEqual(node, currentNode))) {
-                    cellType = CellType.Visited;
-                } else if (searchState.frontierNodes.some(node => areGridNodesEqual(node, currentNode))) {
-                    cellType = CellType.Frontier;
-                }
-
-                tempGrid[i][j] = cellType;
+                tempGrid[i][j] = this.getTypeForNode(currentNode, searchState);
             }
         }
         return tempGrid;
+    }
+
+    private getTypeForNode(currentNode: GridNode, searchState: SearchSnapshot<GridNode> | CompletedSearch<GridNode>) {
+        let cellType = CellType.Default;
+        if (areGridNodesEqual(this.props.target, currentNode)) {
+            cellType = CellType.Finish;
+        }
+        else if (areGridNodesEqual(searchState.start, currentNode)) {
+            cellType = CellType.Start;
+        }
+        else if (this.isCompletedSearch(searchState) && searchState.resultingPath.some(node => areGridNodesEqual(node, currentNode))) {
+            cellType = CellType.Path;
+        }
+        else if (searchState.visitedNodes.some(node => areGridNodesEqual(node, currentNode))) {
+            cellType = CellType.Visited;
+        }
+        else if (searchState.frontierNodes.some(node => areGridNodesEqual(node, currentNode))) {
+            cellType = CellType.Frontier;
+        }
+        return cellType;
+    }
+
+    private isCompletedSearch(searchState: SearchSnapshot<GridNode> | CompletedSearch<GridNode>): searchState is CompletedSearch<GridNode> {
+        return (searchState as CompletedSearch<GridNode>).isComplete;
     }
 
     private mapToCellElements(grid: CellType[][]): JSX.Element[] {

@@ -11,6 +11,7 @@
     margin: auto;
     padding: 0;
     height: 27px;
+    margin-top: -1px;
     overflow: hidden;
 }
 
@@ -39,5 +40,5 @@
 }
 
 .GridCell.Start {
-    background-color: #5fd819;
+    background-color: #7fe245;
 }
