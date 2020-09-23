@@ -26,6 +26,10 @@ export interface CompletedSearch<TNode> extends SearchSnapshot<TNode> {
     resultingPath: TNode[];
 }
 
+export function isCompletedSearch(searchState: SearchSnapshot<GridNode>): searchState is CompletedSearch<GridNode> {
+    return (searchState as CompletedSearch<GridNode>).isComplete;
+}
+
 export abstract class SearchAlgorithm {
     constructor(protected addSnapshot: (snapshot: SearchSnapshot<GridNode>) => void) {
     }

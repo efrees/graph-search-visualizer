@@ -1,7 +1,7 @@
 import React, { ChangeEvent } from 'react';
+import { AStarSearch, BreadthFirstSearch, GridNode, isCompletedSearch, SearchAlgorithm, SearchSnapshot } from './algorithms';
 import './App.css';
 import { Grid } from './grid/Grid';
-import { GridNode, BreadthFirstSearch, SearchSnapshot, AStarSearch, SearchAlgorithm } from './algorithms';
 
 type SearchAlgorithmType = {
     new(addSnapshot: (snapshot: SearchSnapshot<GridNode>) => void): SearchAlgorithm;
@@ -88,8 +88,13 @@ export class App extends React.Component<any, AppState>  {
     }
 
     private getStatusMessage(): string {
-        return this.state.searchHistory.length > 0
-            ? `${this.state.selectedAlgorithm.name} Result`
+        const searchState = this.state.currentSnapshot;
+        const stats = isCompletedSearch(searchState)
+            ? ` (Visited: ${searchState.visitedNodes.length}, Path Length: ${searchState.resultingPath.length})`
+            : '';
+
+        return searchState.visitedNodes.length > 0
+            ? `${this.state.selectedAlgorithm.name} Result${stats}`
             : 'Click to select a start node.';
     }
 

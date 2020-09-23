@@ -1,6 +1,6 @@
 import React from 'react';
+import { areGridNodesEqual, GridNode, isCompletedSearch, SearchSnapshot } from '../algorithms';
 import './Grid.css';
-import { CompletedSearch, SearchSnapshot, GridNode, areGridNodesEqual } from '../algorithms';
 
 export enum CellType {
     Default = 'Default',
@@ -36,10 +36,6 @@ function GridCell(props: GridCellParams): JSX.Element {
 }
 
 export class Grid extends React.Component<GridParams, GridState> {
-    constructor(props: GridParams) {
-        super(props);
-    }
-
     render(): JSX.Element {
         const cells = this.generateGridArrays(this.props.searchState);
         const gridElements = this.mapToCellElements(cells);
@@ -72,7 +68,7 @@ export class Grid extends React.Component<GridParams, GridState> {
         if (areGridNodesEqual(searchState.start, currentNode)) {
             return CellType.Start;
         }
-        if (this.isCompletedSearch(searchState) && searchState.resultingPath.some(node => areGridNodesEqual(node, currentNode))) {
+        if (isCompletedSearch(searchState) && searchState.resultingPath.some(node => areGridNodesEqual(node, currentNode))) {
             return CellType.Path;
         }
         if (searchState.visitedNodes.some(node => areGridNodesEqual(node, currentNode))) {
@@ -82,10 +78,6 @@ export class Grid extends React.Component<GridParams, GridState> {
             return CellType.Frontier;
         }
         return CellType.Default;
-    }
-
-    private isCompletedSearch(searchState: SearchSnapshot<GridNode>): searchState is CompletedSearch<GridNode> {
-        return (searchState as CompletedSearch<GridNode>).isComplete;
     }
 
     private mapToCellElements(grid: CellType[][]): JSX.Element[] {
