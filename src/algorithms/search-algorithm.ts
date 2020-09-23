@@ -5,6 +5,16 @@ export function areGridNodesEqual(node1: GridNode, node2: GridNode): boolean {
         && node1[1] === node2[1];
 }
 
+export function manhattanDistance(nodeA: GridNode, nodeB: GridNode) {
+    return Math.abs(nodeA[0] - nodeB[0])
+        + Math.abs(nodeA[1] - nodeB[1]);
+}
+
+export interface NodeWithBackreference {
+    node: GridNode;
+    previous?: NodeWithBackreference;
+}
+
 export interface SearchSnapshot<TNode> {
     visitedNodes: TNode[];
     frontierNodes: TNode[];

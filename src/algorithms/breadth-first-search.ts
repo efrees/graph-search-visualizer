@@ -1,16 +1,8 @@
-import { SearchAlgorithm, CompletedSearch, GridNode, areGridNodesEqual } from './search-algorithm';
-
-interface NodeWithBackreference {
-    node: GridNode;
-    previous?: NodeWithBackreference;
-}
-
-function manhattanDistance(nodeA: GridNode, nodeB: GridNode) {
-    return Math.abs(nodeA[0] - nodeB[0])
-        + Math.abs(nodeA[1] - nodeB[1]);
-}
+import { areGridNodesEqual, CompletedSearch, GridNode, manhattanDistance, NodeWithBackreference, SearchAlgorithm } from './search-algorithm';
 
 export class BreadthFirstSearch extends SearchAlgorithm {
+    public title = "Breadth First Search";
+
     private _singleSnapshotPerGeneration = true;
 
     search(start: GridNode, finish: GridNode): CompletedSearch<GridNode> {
