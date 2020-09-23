@@ -1,13 +1,24 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 import './App.css';
 import { Grid } from './grid/Grid';
-import { GridNode, BreadthFirstSearch, SearchSnapshot } from './algorithms';
+import { GridNode, BreadthFirstSearch, SearchSnapshot, AStarSearch, SearchAlgorithm } from './algorithms';
+
+type SearchAlgorithmType = {
+    new(addSnapshot: (snapshot: SearchSnapshot<GridNode>) => void): SearchAlgorithm;
+};
+
+interface AlgorithmOption {
+    id: number;
+    name: string;
+    searchImplementation: SearchAlgorithmType;
+}
 
 interface AppState {
     searchHistory: SearchSnapshot<GridNode>[];
     currentSnapshot: SearchSnapshot<GridNode>;
     startNode: GridNode;
     targetNode: GridNode;
+    selectedAlgorithm: AlgorithmOption;
 }
 
 function initialSearchState(): SearchSnapshot<GridNode> {
@@ -21,13 +32,20 @@ function initialSearchState(): SearchSnapshot<GridNode> {
 export class App extends React.Component<any, AppState>  {
     private animationTimeoutId: NodeJS.Timeout | undefined;
 
+    private thing = typeof SearchAlgorithm;
+    private readonly _availableAlgorithms: AlgorithmOption[] = [
+        { id: 1, name: "Breadth First Search", searchImplementation: BreadthFirstSearch },
+        { id: 2, name: "A* Search", searchImplementation: AStarSearch }
+    ];
+
     constructor(props: any) {
         super(props);
         this.state = {
             searchHistory: [],
             currentSnapshot: initialSearchState(),
-            startNode: [0, 0],
-            targetNode: [30, 11]
+            startNode: [-1, -1],
+            targetNode: [30, 11],
+            selectedAlgorithm: this._availableAlgorithms[0]
         }
     }
 
@@ -36,13 +54,20 @@ export class App extends React.Component<any, AppState>  {
     }
 
     render(): JSX.Element {
-        console.log('rendering');
         return (
             <div className="App">
                 <header className="App-header">
                     <h2>
                         Visualize Search Algorithms on a Grid
-                </h2>
+                    </h2>
+                    <label>
+                        Algorithm:
+                        <select id="alg-chooser"
+                            value={this.state.selectedAlgorithm.id}
+                            onChange={(event) => this.selectAlgorithmOption(event)}>
+                            {this.getAlgorithmOptions()}
+                        </select>
+                    </label>
                 </header>
                 <div className="App-content">
                     <Grid width={40} height={20}
@@ -51,9 +76,30 @@ export class App extends React.Component<any, AppState>  {
                         cellClicked={cell => this.handleCellClicked(cell)}
                     />
                 </div>
-                <p className="App-message">Breadth First Search Result</p>
+                <p className="App-message">{this.getStatusMessage()}</p>
             </div>
         );
+    }
+
+    private getAlgorithmOptions(): JSX.Element[] {
+        return this._availableAlgorithms.map(alg => (
+            <option value={alg.id} key={alg.id}>{alg.name}</option>
+        ));
+    }
+
+    private getStatusMessage(): string {
+        return this.state.searchHistory.length > 0
+            ? `${this.state.selectedAlgorithm.name} Result`
+            : 'Click to select a start node.';
+    }
+
+    private selectAlgorithmOption(event: ChangeEvent<HTMLSelectElement>): void {
+        const selectedId = +event.target.value;
+        this.setState({
+            selectedAlgorithm: this._availableAlgorithms.find(alg => alg.id === selectedId)!
+        }, () => this.runSearchWithAnimation());
+
+        this.runSearchWithAnimation();
     }
 
     private handleCellClicked(cell: GridNode): void {
@@ -62,15 +108,24 @@ export class App extends React.Component<any, AppState>  {
         }, () => this.runSearchWithAnimation());
     }
 
-    private runSearchWithAnimation() {
+    private hasStartNodeSelected(): boolean {
+        return this.state.startNode[0] >= 0
+    }
+
+    private runSearchWithAnimation(): void {
+        if (!this.hasStartNodeSelected()) {
+            return;
+        }
+
         this.cancelAnimation();
         this.runSearchAlgorithm();
         this.animateSearchHistory();
     }
 
-    private runSearchAlgorithm() {
+    private runSearchAlgorithm(): void {
         const searchHistory: SearchSnapshot<GridNode>[] = [];
-        const searchAlgorithm = new BreadthFirstSearch(snapshot => searchHistory.push(snapshot));
+        const searchImplementation = this.state.selectedAlgorithm.searchImplementation;
+        const searchAlgorithm = new searchImplementation(snapshot => searchHistory.push(snapshot));
 
         const finalState = searchAlgorithm.search(this.state.startNode, this.state.targetNode);
         this.setState({
@@ -93,7 +148,7 @@ export class App extends React.Component<any, AppState>  {
         }, 20);
     }
 
-    private cancelAnimation() {
+    private cancelAnimation(): void {
         if (this.animationTimeoutId) {
             clearTimeout(this.animationTimeoutId);
         }

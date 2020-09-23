@@ -18,3 +18,13 @@
 .App-link {
     color: #61dafb;
 }
+
+label > * {
+    margin-left: 10px;
+}
+
+select {
+    padding: 3px;
+    font-size: large;
+    background-color: #e0eeff;
+}
