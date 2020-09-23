@@ -5,10 +5,18 @@ interface NodeWithBackreference {
     previous?: NodeWithBackreference;
 }
 
+function manhattanDistance(nodeA: GridNode, nodeB: GridNode) {
+    return Math.abs(nodeA[0] - nodeB[0])
+        + Math.abs(nodeA[1] - nodeB[1]);
+}
+
 export class BreadthFirstSearch extends SearchAlgorithm {
+    private _singleSnapshotPerGeneration = true;
+
     search(start: GridNode, finish: GridNode): CompletedSearch<GridNode> {
         let frontier: NodeWithBackreference[] = [{ node: start }];
         let visitedNodes: GridNode[] = [];
+        let lastSnapshotDistance = -1;
 
         this.addSnapshot({ start, visitedNodes, frontierNodes: frontier.map(pair => pair.node) });
 
@@ -29,7 +37,11 @@ export class BreadthFirstSearch extends SearchAlgorithm {
             const next = this.getNextFourConnected(current);
             frontier = frontier.concat(next);
 
-            this.addSnapshot({ start, visitedNodes, frontierNodes: frontier.map(pair => pair.node) })
+            const currentDistanceFromStart = manhattanDistance(start, current.node);
+            if (!this._singleSnapshotPerGeneration || currentDistanceFromStart > lastSnapshotDistance) {
+                lastSnapshotDistance = currentDistanceFromStart;
+                this.addSnapshot({ start, visitedNodes, frontierNodes: frontier.map(pair => pair.node) })
+            }
         }
 
         const path = !!targetNode
